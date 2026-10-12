@@ -23,7 +23,7 @@
                 <i class="fa-solid fa-bolt text-amber-400"></i> 極速叫貨單生成系統
             </h1>
             <div class="flex items-center gap-1.5">
-                <button onclick="toggleHistoryModal(true)" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-2.5 py-1.5 rounded-lg font-bold transition active:scale-95 shadow flex items-center gap-1">
+                <button onclick="checkHistoryAuthAndOpen()" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-2.5 py-1.5 rounded-lg font-bold transition active:scale-95 shadow flex items-center gap-1">
                     <i class="fa-solid fa-clock-rotate-left text-amber-400"></i>歷史紀錄
                     <span id="history-badge" class="bg-amber-500 text-slate-900 text-[10px] px-1.5 py-0.2 rounded-full font-black">0</span>
                 </button>
@@ -69,11 +69,8 @@
                     <div>
                         <label class="block font-bold text-slate-500 mb-1"><i class="fa-solid fa-truck text-indigo-500 mr-1"></i>物流單位</label>
                         <select id="logistics-select" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 font-bold text-slate-800 focus:ring-2 focus:ring-indigo-500 outline-none">
-                            <option value="大榮貨運">大榮貨運</option>
+                            <option value="大榮貨運" selected>大榮貨運</option>
                             <option value="新竹物流">新竹物流</option>
-                            <option value="順豐速運">順豐速運</option>
-                            <option value="郵局快捷">郵局快捷</option>
-                            <option value="門市自取">門市自取</option>
                         </select>
                     </div>
                     <div>
@@ -90,70 +87,17 @@
                     <div>
                         <label class="block font-bold text-slate-500 mb-1"><i class="fa-solid fa-clock text-amber-500 mr-1"></i>到貨要求</label>
                         <select id="delivery-requirement" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 font-bold text-red-600 focus:ring-2 focus:ring-indigo-500 outline-none">
-                            <option value="明日到">明日到</option>
-                            <option value="急件當日到">急件當日到</option>
-                            <option value="常規到貨">常規到貨</option>
+                            <option value="明日到" selected>明日到</option>
                         </select>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="space-y-1.5">
-            <div class="text-[11px] font-bold text-slate-500 px-1 flex justify-between items-center">
-                <span><i class="fa-solid fa-eye text-indigo-600 mr-1"></i>即時預覽卡片（貼至 LINE 叫貨）</span>
-                <span class="text-[10px] text-slate-400">高清可複製</span>
-            </div>
-
-            <div id="export-card" class="bg-white rounded-xl shadow-md border-2 border-slate-900 p-3 space-y-2.5 text-slate-900 overflow-x-auto max-w-full">
-                <table class="w-full text-center text-xs font-bold order-table border-collapse">
-                    <thead>
-                        <tr class="bg-sky-600 text-white font-extrabold">
-                            <th class="py-1 w-1/4">型號</th>
-                            <th class="py-1 w-1/2">尺寸-顏色</th>
-                            <th class="py-1 w-1/4">數量</th>
-                        </tr>
-                    </thead>
-                    <tbody id="preview-clothes-body"></tbody>
-                    <tfoot>
-                        <tr class="bg-pink-100 text-pink-900 font-black">
-                            <td class="py-1 text-red-600">合計</td>
-                            <td></td>
-                            <td id="preview-clothes-total" class="py-1 text-red-600 text-sm">0</td>
-                        </tr>
-                    </tfoot>
-                </table>
-
-                <table class="w-full text-center text-xs font-bold order-table border-collapse">
-                    <thead>
-                        <tr class="bg-sky-600 text-white font-extrabold">
-                            <th class="py-1 w-1/4">型號</th>
-                            <th class="py-1 w-1/2">內褲尺寸</th>
-                            <th class="py-1 w-1/4">數量</th>
-                        </tr>
-                    </thead>
-                    <tbody id="preview-underwear-body"></tbody>
-                    <tfoot>
-                        <tr class="bg-pink-100 text-pink-900 font-black">
-                            <td class="py-1 text-red-600">合計</td>
-                            <td></td>
-                            <td id="preview-underwear-total" class="py-1 text-red-600 text-sm">0打</td>
-                        </tr>
-                    </tfoot>
-                </table>
-
-                <div class="grid grid-cols-3 border-2 border-slate-900 bg-amber-50 text-center text-[11px] font-extrabold text-slate-900 divide-x divide-slate-900">
-                    <div class="py-1.5 px-1 flex items-center justify-center">
-                        <span id="preview-delivery-text" class="text-red-600 font-black">明日到</span>
-                    </div>
-                    <div class="py-1.5 px-1 flex items-center justify-center overflow-hidden">
-                        <span id="preview-logistics-text" class="whitespace-nowrap text-[10px] sm:text-xs">寄「新莊」〔大榮貨運〕</span>
-                    </div>
-                    <div class="py-1.5 px-1 flex items-center justify-center">
-                        <span id="preview-date-text" class="text-slate-700 font-bold">10月12日</span>
-                    </div>
-                </div>
-            </div>
+        <div class="flex justify-between items-center px-1">
+            <button onclick="togglePreviewModal(true)" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-bold py-2.5 px-3 rounded-xl shadow transition active:scale-98 flex items-center justify-center gap-2 text-xs cursor-pointer border border-slate-700">
+                <i class="fa-solid fa-layer-group text-amber-400"></i> 檢視即時預覽卡片
+            </button>
         </div>
     </main>
 
@@ -168,6 +112,76 @@
                 </button>
                 <button onclick="downloadImageFile()" title="下載圖片檔" class="bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-700 font-bold p-3 rounded-xl transition active:scale-95 flex items-center justify-center">
                     <i class="fa-solid fa-download text-base"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 獨立即時預覽卡片彈窗 -->
+    <div id="preview-modal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 flex items-center justify-center p-3 opacity-0 pointer-events-none transition-all duration-300">
+        <div class="bg-white w-full max-w-md rounded-2xl max-h-[90vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden">
+            <div class="bg-slate-900 text-white p-3 flex justify-between items-center">
+                <h2 class="text-xs font-black flex items-center gap-1.5">
+                    <i class="fa-solid fa-eye text-indigo-400"></i> 即時預覽卡片
+                </h2>
+                <button onclick="togglePreviewModal(false)" class="text-slate-400 hover:text-white p-1 text-base">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="p-3 overflow-y-auto flex-1 bg-slate-50 space-y-3">
+                <div id="export-card" class="bg-white rounded-xl shadow-md border-2 border-slate-900 p-3 space-y-2.5 text-slate-900 overflow-x-auto max-w-full">
+                    <table class="w-full text-center text-xs font-bold order-table border-collapse">
+                        <thead>
+                            <tr class="bg-sky-600 text-white font-extrabold">
+                                <th class="py-1 w-1/4">型號</th>
+                                <th class="py-1 w-1/2">尺寸-顏色</th>
+                                <th class="py-1 w-1/4">數量</th>
+                            </tr>
+                        </thead>
+                        <tbody id="preview-clothes-body"></tbody>
+                        <tfoot>
+                            <tr class="bg-pink-100 text-pink-900 font-black">
+                                <td class="py-1 text-red-600">合計</td>
+                                <td></td>
+                                <td id="preview-clothes-total" class="py-1 text-red-600 text-sm">0</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+
+                    <table class="w-full text-center text-xs font-bold order-table border-collapse">
+                        <thead>
+                            <tr class="bg-sky-600 text-white font-extrabold">
+                                <th class="py-1 w-1/4">型號</th>
+                                <th class="py-1 w-1/2">內褲尺寸</th>
+                                <th class="py-1 w-1/4">數量</th>
+                            </tr>
+                        </thead>
+                        <tbody id="preview-underwear-body"></tbody>
+                        <tfoot>
+                            <tr class="bg-pink-100 text-pink-900 font-black">
+                                <td class="py-1 text-red-600">合計</td>
+                                <td></td>
+                                <td id="preview-underwear-total" class="py-1 text-red-600 text-sm">0打</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+
+                    <div class="grid grid-cols-3 border-2 border-slate-900 bg-amber-50 text-center text-[11px] font-extrabold text-slate-900 divide-x divide-slate-900">
+                        <div class="py-1.5 px-1 flex items-center justify-center">
+                            <span id="preview-delivery-text" class="text-red-600 font-black">明日到</span>
+                        </div>
+                        <div class="py-1.5 px-1 flex items-center justify-center overflow-hidden">
+                            <span id="preview-logistics-text" class="whitespace-nowrap text-[10px] sm:text-xs">寄「新莊」〔大榮貨運〕</span>
+                        </div>
+                        <div class="py-1.5 px-1 flex items-center justify-center">
+                            <span id="preview-date-text" class="text-slate-700 font-bold">10月12日</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="p-2.5 bg-white border-t border-slate-200">
+                <button onclick="togglePreviewModal(false)" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2 rounded-xl text-xs transition">
+                    關閉預覽
                 </button>
             </div>
         </div>
@@ -210,19 +224,20 @@
         </div>
     </div>
 
+    <!-- 歷史紀錄詳情 (優化配色) -->
     <div id="detail-modal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-all duration-200">
         <div class="bg-white w-full max-w-sm rounded-2xl max-h-[80vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden">
-            <div class="bg-indigo-600 text-white p-3 flex justify-between items-center">
+            <div class="bg-slate-900 text-white p-3 flex justify-between items-center border-b border-slate-800">
                 <h3 class="text-xs font-black flex items-center gap-1.5">
-                    <i class="fa-solid fa-file-lines"></i> 歷史叫貨單詳細資料
+                    <i class="fa-solid fa-file-lines text-amber-400"></i> 歷史叫貨單詳細資料
                 </h3>
-                <button onclick="toggleDetailModal(false)" class="text-white/80 hover:text-white p-1 text-sm">
+                <button onclick="toggleDetailModal(false)" class="text-slate-400 hover:text-white p-1 text-sm">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
             <div id="detail-content-body" class="p-3 overflow-y-auto space-y-3 text-xs bg-slate-50 flex-1"></div>
             <div class="p-2.5 bg-white border-t border-slate-200 flex gap-2">
-                <button id="detail-reload-btn" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 rounded-xl text-xs transition">
+                <button id="detail-reload-btn" class="flex-1 bg-slate-900 hover:bg-slate-800 text-amber-400 font-bold py-2 rounded-xl text-xs transition">
                     載入此筆至編輯區
                 </button>
                 <button onclick="toggleDetailModal(false)" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 py-2 rounded-xl text-xs transition">
@@ -237,7 +252,8 @@
     </div>
 
     <script>
-        const sizes = ['S', 'M', 'L', 'XL', '2XL', '3XL', '4XL', 'Free', '特殊規格'];
+        const clothesSizes = ['M', 'L', 'XL', '2XL', '3XL'];
+        const underwearSizes = ['M', 'L', 'XL', '2XL'];
 
         let clothesData = [
             { model: 'K-555', items: [{ size: '3XL', color: '黑', qty: 30 }] },
@@ -248,10 +264,35 @@
         let underwearData = [
             { model: 'K-999', items: [{ size: 'L', qty: 1 }, { size: 'XL', qty: 2 }] },
             { model: 'K-868', items: [{ size: '2XL', qty: 2 }] },
-            { model: 'K-858', items: [{ size: 'L-2XL', qty: 2 }] }
+            { model: 'K-858', items: [{ size: 'L', qty: 2 }] }
         ];
 
         let historyRecords = [];
+
+        function checkHistoryAuthAndOpen() {
+            const isAuth = localStorage.getItem('history_authed_v1');
+            if (isAuth === 'true') {
+                toggleHistoryModal(true);
+            } else {
+                const pwd = prompt("請輸入歷史紀錄查看密碼：");
+                if (pwd === '922560') {
+                    localStorage.setItem('history_authed_v1', 'true');
+                    toggleHistoryModal(true);
+                } else if (pwd !== null) {
+                    alert("密碼錯誤！無法查看歷史紀錄。");
+                }
+            }
+        }
+
+        function togglePreviewModal(show) {
+            const modal = document.getElementById('preview-modal');
+            if (show) {
+                updatePreview();
+                modal.classList.remove('opacity-0', 'pointer-events-none');
+            } else {
+                modal.classList.add('opacity-0', 'pointer-events-none');
+            }
+        }
 
         function loadMemory() {
             const sc = localStorage.getItem('ultra_c_v8');
@@ -348,7 +389,7 @@
                         ${g.items.map((sub, sIdx) => `
                             <div class="flex items-center gap-1.5 bg-white p-1.5 rounded-lg border border-pink-100 text-xs">
                                 <select onchange="clothesData[${gIdx}].items[${sIdx}].size=this.value; updatePreview();" class="bg-slate-50 border border-slate-200 rounded px-1.5 py-1 font-bold">
-                                    ${sizes.map(s => `<option ${sub.size===s?'selected':''}>${s}</option>`).join('')}
+                                    ${clothesSizes.map(s => `<option ${sub.size===s?'selected':''}>${s}</option>`).join('')}
                                 </select>
                                 <input type="text" value="${sub.color}" onchange="clothesData[${gIdx}].items[${sIdx}].color=this.value; updatePreview();" placeholder="顏色" class="w-16 bg-slate-50 border border-slate-200 rounded px-1.5 py-1">
                                 <div class="flex items-center gap-1 ml-auto">
@@ -381,7 +422,7 @@
                         ${g.items.map((sub, sIdx) => `
                             <div class="flex items-center gap-1.5 bg-white p-1.5 rounded-lg border border-amber-100 text-xs">
                                 <select onchange="underwearData[${gIdx}].items[${sIdx}].size=this.value; updatePreview();" class="flex-1 bg-slate-50 border border-slate-200 rounded px-1.5 py-1 font-bold text-amber-900">
-                                    ${sizes.map(s => `<option ${sub.size===s?'selected':''}>${s}</option>`).join('')}
+                                    ${underwearSizes.map(s => `<option ${sub.size===s?'selected':''}>${s}</option>`).join('')}
                                 </select>
                                 <div class="flex items-center gap-1 ml-auto">
                                     <button onclick="adjustQty('underwear', ${gIdx},${sIdx}, -1)" class="w-6 h-6 bg-amber-100 text-amber-800 hover:bg-amber-200 rounded font-bold flex items-center justify-center text-sm">-</button>
@@ -495,6 +536,7 @@
         document.getElementById('delivery-requirement').addEventListener('change', updatePreview);
 
         async function copyImageToClipboardOnly() {
+            updatePreview();
             const card = document.getElementById('export-card');
             try {
                 const canvas = await html2canvas(card, { scale: 3, useCORS: true, backgroundColor: '#ffffff' });
@@ -517,6 +559,7 @@
         }
 
         async function downloadImageFile() {
+            updatePreview();
             const card = document.getElementById('export-card');
             try {
                 const canvas = await html2canvas(card, { scale: 3, useCORS: true, backgroundColor: '#ffffff' });
@@ -605,7 +648,7 @@
                 const fullSummaryText = [clothesSummary, underwearSummary].filter(Boolean).join(' / ');
 
                 return `
-                    <div class="bg-white rounded-lg p-2.5 border border-slate-200 shadow-xs flex items-center justify-between gap-2 hover:border-indigo-300 transition">
+                    <div class="bg-white rounded-lg p-2.5 border border-slate-200 shadow-xs flex items-center justify-between gap-2 hover:border-slate-400 transition">
                         <div class="min-w-0 flex-1 cursor-pointer" onclick="showHistoryDetail(${item.id})" title="點擊查看詳細資料">
                             <div class="flex items-center gap-2 text-[11px] font-bold text-slate-500">
                                 <span class="text-slate-900 font-extrabold"><i class="fa-regular fa-clock mr-1 text-slate-400"></i>${item.timestamp}</span>
@@ -619,9 +662,9 @@
                         </div>
                         <div class="flex items-center gap-1 shrink-0">
                             <button onclick="showHistoryDetail(${item.id})" title="查看詳細資料" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2.5 py-1.5 rounded-lg text-xs transition active:scale-95 flex items-center gap-1 border border-slate-200 cursor-pointer">
-                                <i class="fa-solid fa-eye text-indigo-600"></i> 詳情
+                                <i class="fa-solid fa-eye text-slate-600"></i> 詳情
                             </button>
-                            <button onclick="reloadHistoryToEdit(${item.id})" title="載入編輯區" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold px-2.5 py-1.5 rounded-lg text-xs transition active:scale-95 flex items-center gap-1 border border-indigo-200 cursor-pointer">
+                            <button onclick="reloadHistoryToEdit(${item.id})" title="載入編輯區" class="bg-slate-800 hover:bg-slate-700 text-amber-400 font-bold px-2.5 py-1.5 rounded-lg text-xs transition active:scale-95 flex items-center gap-1 cursor-pointer">
                                 <i class="fa-solid fa-arrow-rotate-left"></i> 載入
                             </button>
                             <button onclick="deleteHistoryRecord(${item.id})" title="刪除" class="text-slate-300 hover:text-red-500 p-1.5 text-xs transition">
@@ -641,7 +684,7 @@
             let clothesHtml = item.clothesData && item.clothesData.length > 0 ? `
                 <div class="space-y-1">
                     <div class="font-black text-pink-700 flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-pink-500 inline-block"></span> 衣褲類明細</div>
-                    <div class="bg-white rounded-lg p-2 border border-pink-100 space-y-1.5">
+                    <div class="bg-white rounded-lg p-2 border border-slate-200 space-y-1.5">
                         ${item.clothesData.map(g => `<div class="text-[11px] flex justify-between border-b border-slate-100 pb-1"><span class="font-bold text-slate-800">${g.model}</span><span class="text-slate-600">${g.items.map(sub => `${sub.size} ${sub.color || ''} (${sub.qty}件)`).join('、')}</span></div>`).join('')}
                     </div>
                 </div>
@@ -650,7 +693,7 @@
             let underwearHtml = item.underwearData && item.underwearData.length > 0 ? `
                 <div class="space-y-1">
                     <div class="font-black text-amber-800 flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span> 內褲類明細</div>
-                    <div class="bg-white rounded-lg p-2 border border-amber-100 space-y-1.5">
+                    <div class="bg-white rounded-lg p-2 border border-slate-200 space-y-1.5">
                         ${item.underwearData.map(g => `<div class="text-[11px] flex justify-between border-b border-slate-100 pb-1"><span class="font-bold text-slate-800">${g.model}</span><span class="text-slate-600">${g.items.map(sub => `${sub.size} (${sub.qty}打)`).join('、')}</span></div>`).join('')}
                     </div>
                 </div>
@@ -659,11 +702,11 @@
             body.innerHTML = `
                 <div class="bg-white p-2.5 rounded-xl border border-slate-200 space-y-2">
                     <div class="flex justify-between items-center text-[11px] font-bold text-slate-500 border-b border-slate-100 pb-1.5">
-                        <span>紀錄時間：${item.timestamp}</span><span class="text-red-600">${item.deliveryReq}</span>
+                        <span>紀錄時間：${item.timestamp}</span><span class="text-red-600 font-bold">${item.deliveryReq}</span>
                     </div>
                     <div class="text-xs font-bold text-slate-800 grid grid-cols-2 gap-1">
-                        <div>物流單位：<span class="text-indigo-600">${item.logistics}</span></div>
-                        <div>目的地點：<span class="text-indigo-600">${item.location}</span></div>
+                        <div>物流單位：<span class="text-slate-900">${item.logistics}</span></div>
+                        <div>目的地點：<span class="text-slate-900">${item.location}</span></div>
                         <div>叫貨日期：<span class="text-slate-600">${item.orderDate || '未指定'}</span></div>
                         <div>總計：<span class="text-pink-600">${item.clothesTotal}件</span> / <span class="text-amber-600">${item.underwearTotal}打</span></div>
                     </div>
