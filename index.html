@@ -35,64 +35,6 @@
     </header>
 
     <main class="max-w-md mx-auto p-3 space-y-4">
-        <!-- 即時預覽卡片放回主畫面 -->
-        <div class="space-y-1.5">
-            <div class="text-[11px] font-bold text-slate-500 px-1 flex justify-between items-center">
-                <span><i class="fa-solid fa-eye text-indigo-600 mr-1"></i>即時預覽卡片（貼至 LINE 叫貨）</span>
-                <span class="text-[10px] text-slate-400">高清可複製</span>
-            </div>
-
-            <div id="export-card" class="bg-white rounded-xl shadow-md border-2 border-slate-900 p-3 space-y-2.5 text-slate-900 overflow-x-auto max-w-full">
-                <table class="w-full text-center text-xs font-bold order-table border-collapse">
-                    <thead>
-                        <tr class="bg-sky-600 text-white font-extrabold">
-                            <th class="py-1 w-1/4">型號</th>
-                            <th class="py-1 w-1/2">尺寸-顏色</th>
-                            <th class="py-1 w-1/4">數量</th>
-                        </tr>
-                    </thead>
-                    <tbody id="preview-clothes-body"></tbody>
-                    <tfoot>
-                        <tr class="bg-pink-100 text-pink-900 font-black">
-                            <td class="py-1 text-red-600">合計</td>
-                            <td></td>
-                            <td id="preview-clothes-total" class="py-1 text-red-600 text-sm">0</td>
-                        </tr>
-                    </tfoot>
-                </table>
-
-                <table class="w-full text-center text-xs font-bold order-table border-collapse">
-                    <thead>
-                        <tr class="bg-sky-600 text-white font-extrabold">
-                            <th class="py-1 w-1/4">型號</th>
-                            <th class="py-1 w-1/2">內褲尺寸</th>
-                            <th class="py-1 w-1/4">數量</th>
-                        </tr>
-                    </thead>
-                    <tbody id="preview-underwear-body"></tbody>
-                    <tfoot>
-                        <tr class="bg-pink-100 text-pink-900 font-black">
-                            <td class="py-1 text-red-600">合計</td>
-                            <td></td>
-                            <td id="preview-underwear-total" class="py-1 text-red-600 text-sm">0打</td>
-                        </tr>
-                    </tfoot>
-                </table>
-
-                <div class="grid grid-cols-3 border-2 border-slate-900 bg-amber-50 text-center text-[11px] font-extrabold text-slate-900 divide-x divide-slate-900">
-                    <div class="py-1.5 px-1 flex items-center justify-center">
-                        <span id="preview-delivery-text" class="text-red-600 font-black">明日到</span>
-                    </div>
-                    <div class="py-1.5 px-1 flex items-center justify-center overflow-hidden">
-                        <span id="preview-logistics-text" class="whitespace-nowrap text-[10px] sm:text-xs">寄「新莊」〔大榮貨運〕</span>
-                    </div>
-                    <div class="py-1.5 px-1 flex items-center justify-center">
-                        <span id="preview-date-text" class="text-slate-700 font-bold">10月12日</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-3.5 space-y-4">
             <div>
                 <div class="flex justify-between items-center mb-2">
@@ -153,23 +95,103 @@
         </div>
     </main>
 
-    <!-- 複製與完成叫貨按鈕在底部固定列 -->
+    <!-- 底部固定列：只有「檢視即時預覽卡片」按鈕 -->
     <div class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 p-2.5 shadow-2xl z-30">
-        <div class="max-w-md mx-auto space-y-2">
-            <button onclick="finishOrderAndSaveHistory()" class="w-full bg-slate-900 hover:bg-slate-800 text-amber-400 font-black py-2.5 px-3 rounded-xl shadow transition active:scale-98 flex items-center justify-center gap-2 text-xs cursor-pointer border border-slate-800">
-                <i class="fa-solid fa-circle-check text-emerald-400 text-sm"></i> 完成已叫貨（存入雲端歷史紀錄）
+        <div class="max-w-md mx-auto">
+            <button onclick="togglePreviewModal(true)" class="w-full bg-slate-900 hover:bg-slate-800 text-amber-400 font-black py-3 px-3 rounded-xl shadow transition active:scale-98 flex items-center justify-center gap-2 text-xs cursor-pointer border border-slate-800">
+                <i class="fa-solid fa-layer-group text-sm"></i> 檢視即時預覽卡片（複製與完成叫貨）
             </button>
-            <div class="flex items-center gap-2">
-                <button onclick="copyImageToClipboardOnly()" class="flex-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 active:scale-98 text-white font-black py-3 px-3 rounded-xl shadow-lg transition flex items-center justify-center gap-2 text-sm cursor-pointer">
-                    <i class="fa-solid fa-copy text-lg"></i> 複製叫貨圖片（發送 LINE）
+        </div>
+    </div>
+
+    <!-- 點擊「檢視即時預覽卡片」後彈出的視窗（內含預覽卡片、複製與完成叫貨按鈕） -->
+    <div id="preview-modal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 flex items-center justify-center p-3 opacity-0 pointer-events-none transition-all duration-300">
+        <div class="bg-white w-full max-w-md rounded-2xl max-h-[90vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden">
+            <div class="bg-slate-900 text-white p-3 flex justify-between items-center">
+                <h2 class="text-xs font-black flex items-center gap-1.5">
+                    <i class="fa-solid fa-eye text-amber-400"></i> 即時預覽卡片與操作
+                </h2>
+                <button onclick="togglePreviewModal(false)" class="text-slate-400 hover:text-white p-1 text-base">
+                    <i class="fa-solid fa-xmark"></i>
                 </button>
-                <button onclick="downloadImageFile()" title="下載圖片檔" class="bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-700 font-bold p-3 rounded-xl transition active:scale-95 flex items-center justify-center">
-                    <i class="fa-solid fa-download text-base"></i>
+            </div>
+            
+            <div class="p-3 overflow-y-auto flex-1 bg-slate-50 space-y-3">
+                <div id="modal-export-card" class="bg-white rounded-xl shadow-md border-2 border-slate-900 p-3 space-y-2.5 text-slate-900 overflow-x-auto max-w-full">
+                    <table class="w-full text-center text-xs font-bold order-table border-collapse">
+                        <thead>
+                            <tr class="bg-sky-600 text-white font-extrabold">
+                                <th class="py-1 w-1/4">型號</th>
+                                <th class="py-1 w-1/2">尺寸-顏色</th>
+                                <th class="py-1 w-1/4">數量</th>
+                            </tr>
+                        </thead>
+                        <tbody id="modal-preview-clothes-body"></tbody>
+                        <tfoot>
+                            <tr class="bg-pink-100 text-pink-900 font-black">
+                                <td class="py-1 text-red-600">合計</td>
+                                <td></td>
+                                <td id="modal-preview-clothes-total" class="py-1 text-red-600 text-sm">0</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+
+                    <table class="w-full text-center text-xs font-bold order-table border-collapse">
+                        <thead>
+                            <tr class="bg-sky-600 text-white font-extrabold">
+                                <th class="py-1 w-1/4">型號</th>
+                                <th class="py-1 w-1/2">內褲尺寸</th>
+                                <th class="py-1 w-1/4">數量</th>
+                            </tr>
+                        </thead>
+                        <tbody id="modal-preview-underwear-body"></tbody>
+                        <tfoot>
+                            <tr class="bg-pink-100 text-pink-900 font-black">
+                                <td class="py-1 text-red-600">合計</td>
+                                <td></td>
+                                <td id="modal-preview-underwear-total" class="py-1 text-red-600 text-sm">0打</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+
+                    <div class="grid grid-cols-3 border-2 border-slate-900 bg-amber-50 text-center text-[11px] font-extrabold text-slate-900 divide-x divide-slate-900">
+                        <div class="py-1.5 px-1 flex items-center justify-center">
+                            <span id="modal-preview-delivery-text" class="text-red-600 font-black">明日到</span>
+                        </div>
+                        <div class="py-1.5 px-1 flex items-center justify-center overflow-hidden">
+                            <span id="modal-preview-logistics-text" class="whitespace-nowrap text-[10px] sm:text-xs">寄「新莊」〔大榮貨運〕</span>
+                        </div>
+                        <div class="py-1.5 px-1 flex items-center justify-center">
+                            <span id="modal-preview-date-text" class="text-slate-700 font-bold">10月12日</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 彈窗內的動作按鈕 -->
+                <div class="space-y-2 pt-2 border-t border-slate-200">
+                    <button onclick="finishOrderAndSaveHistory()" class="w-full bg-slate-900 hover:bg-slate-800 text-amber-400 font-black py-2.5 px-3 rounded-xl shadow transition active:scale-98 flex items-center justify-center gap-2 text-xs cursor-pointer border border-slate-800">
+                        <i class="fa-solid fa-circle-check text-emerald-400 text-sm"></i> 完成已叫貨（存入雲端歷史紀錄）
+                    </button>
+                    <div class="flex items-center gap-2">
+                        <button onclick="copyImageToClipboardOnly()" class="flex-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 active:scale-98 text-white font-black py-3 px-3 rounded-xl shadow-lg transition flex items-center justify-center gap-2 text-sm cursor-pointer">
+                            <i class="fa-solid fa-copy text-lg"></i> 複製叫貨圖片（發送 LINE）
+                        </button>
+                        <button onclick="downloadImageFile()" title="下載圖片檔" class="bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-700 font-bold p-3 rounded-xl transition active:scale-95 flex items-center justify-center">
+                            <i class="fa-solid fa-download text-base"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-2.5 bg-white border-t border-slate-200">
+                <button onclick="togglePreviewModal(false)" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2 rounded-xl text-xs transition">
+                    關閉預覽
                 </button>
             </div>
         </div>
     </div>
 
+    <!-- 歷史紀錄列表彈窗 -->
     <div id="history-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 opacity-0 pointer-events-none transition-all duration-300">
         <div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-2xl max-h-[85vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden">
             <div class="bg-slate-900 text-white p-3.5 flex justify-between items-center">
@@ -207,7 +229,7 @@
         </div>
     </div>
 
-    <!-- 歷史紀錄詳情 (優化配色) -->
+    <!-- 歷史紀錄詳情彈窗 -->
     <div id="detail-modal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-all duration-200">
         <div class="bg-white w-full max-w-sm rounded-2xl max-h-[80vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden">
             <div class="bg-slate-900 text-white p-3 flex justify-between items-center border-b border-slate-800">
@@ -264,6 +286,16 @@
                 } else if (pwd !== null) {
                     alert("密碼錯誤！無法查看歷史紀錄。");
                 }
+            }
+        }
+
+        function togglePreviewModal(show) {
+            const modal = document.getElementById('preview-modal');
+            if (show) {
+                updatePreview();
+                modal.classList.remove('opacity-0', 'pointer-events-none');
+            } else {
+                modal.classList.add('opacity-0', 'pointer-events-none');
             }
         }
 
@@ -439,7 +471,7 @@
         }
 
         function updatePreview() {
-            const cBody = document.getElementById('preview-clothes-body');
+            const cBody = document.getElementById('modal-preview-clothes-body');
             let cTotal = 0;
             const cValid = clothesData.filter(g => (g.model || '').trim() && g.items.length > 0);
             if (cValid.length === 0) {
@@ -461,9 +493,9 @@
                     `;
                 }).join('');
             }
-            document.getElementById('preview-clothes-total').innerText = cTotal + '件';
+            document.getElementById('modal-preview-clothes-total').innerText = cTotal + '件';
 
-            const uBody = document.getElementById('preview-underwear-body');
+            const uBody = document.getElementById('modal-preview-underwear-body');
             let uTotal = 0;
             const uValid = underwearData.filter(g => (g.model || '').trim() && g.items.length > 0);
             if (uValid.length === 0) {
@@ -485,21 +517,21 @@
                     `;
                 }).join('');
             }
-            document.getElementById('preview-underwear-total').innerText = uTotal + '打';
+            document.getElementById('modal-preview-underwear-total').innerText = uTotal + '打';
 
             const logisticsVal = document.getElementById('logistics-select').value;
             const locationVal = document.getElementById('location-input').value || '新莊';
             const deliveryReq = document.getElementById('delivery-requirement').value;
 
-            document.getElementById('preview-delivery-text').innerText = deliveryReq;
-            document.getElementById('preview-logistics-text').innerText = `寄「${locationVal}」〔${logisticsVal}〕`;
+            document.getElementById('modal-preview-delivery-text').innerText = deliveryReq;
+            document.getElementById('modal-preview-logistics-text').innerText = `寄「${locationVal}」〔${logisticsVal}〕`;
 
             const dateVal = document.getElementById('order-date').value;
             if (dateVal) {
                 const d = new Date(dateVal);
-                document.getElementById('preview-date-text').innerText = `${d.getMonth() + 1}月${d.getDate()}日`;
+                document.getElementById('modal-preview-date-text').innerText = `${d.getMonth() + 1}月${d.getDate()}日`;
             } else {
-                document.getElementById('preview-date-text').innerText = '--';
+                document.getElementById('modal-preview-date-text').innerText = '--';
             }
         }
 
@@ -510,7 +542,7 @@
 
         async function copyImageToClipboardOnly() {
             updatePreview();
-            const card = document.getElementById('export-card');
+            const card = document.getElementById('modal-export-card');
             try {
                 const canvas = await html2canvas(card, { scale: 3, useCORS: true, backgroundColor: '#ffffff' });
                 canvas.toBlob(async (blob) => {
@@ -533,7 +565,7 @@
 
         async function downloadImageFile() {
             updatePreview();
-            const card = document.getElementById('export-card');
+            const card = document.getElementById('modal-export-card');
             try {
                 const canvas = await html2canvas(card, { scale: 3, useCORS: true, backgroundColor: '#ffffff' });
                 const url = canvas.toDataURL('image/png');
@@ -576,6 +608,7 @@
 
             historyRecords.unshift(record);
             saveCloudHistory();
+            togglePreviewModal(false);
         }
 
         function toggleHistoryModal(show) {
