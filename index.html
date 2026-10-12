@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>極速叫貨單生成系統</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Noto Sans TC', sans-serif; background-color: #f8fafc; }
+        .order-table th, .order-table td { border: 1.5px solid #0f172a; }
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+    </style>
+</head>
+<body class="pb-36 min-h-screen">
+
+    <header class="bg-slate-900 text-white p-3.5 sticky top-0 z-40 shadow-md">
+        <div class="max-w-md mx-auto flex justify-between items-center">
+            <h1 class="text-base font-black flex items-center gap-2">
+                <i class="fa-solid fa-bolt text-amber-400"></i> 極速叫貨單生成系統
+            </h1>
+            <div class="flex items-center gap-1.5">
+                <button onclick="toggleHistoryModal(true)" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-2.5 py-1.5 rounded-lg font-bold transition active:scale-95 shadow flex items-center gap-1">
+                    <i class="fa-solid fa-clock-rotate-left text-amber-400"></i>歷史紀錄
+                    <span id="history-badge" class="bg-amber-500 text-slate-900 text-[10px] px-1.5 py-0.2 rounded-full font-black">0</span>
+                </button>
+                <button onclick="saveMemory()" class="text-xs bg-indigo-600 hover:bg-indigo-500 text-white px-2.5 py-1.5 rounded-lg font-bold transition active:scale-95 shadow">
+                    <i class="fa-solid fa-bookmark mr-1"></i>儲存常用
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-md mx-auto p-3 space-y-4">
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-3.5 space-y-4">
+            <div>
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-xs font-black text-slate-800 flex items-center gap-1.5">
+                        <span class="w-3 h-3 rounded-full bg-pink-500 inline-block shadow-sm"></span> 衣褲類 (件)
+                    </span>
+                    <button type="button" onclick="addClothesGroup()" class="text-xs bg-pink-50 hover:bg-pink-100 text-pink-600 font-bold px-2.5 py-1 rounded-lg border border-pink-200 transition active:scale-95">
+                        <i class="fa-solid fa-plus mr-1"></i>新增衣褲型號
+                    </button>
+                </div>
+                <div id="clothes-entry-container" class="space-y-2.5"></div>
+            </div>
+
+            <hr class="border-slate-100">
+
+            <div>
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-xs font-black text-slate-800 flex items-center gap-1.5">
+                        <span class="w-3 h-3 rounded-full bg-amber-500 inline-block shadow-sm"></span> 內褲類 (打)
+                    </span>
+                    <button type="button" onclick="addUnderwearGroup()" class="text-xs bg-amber-50 hover:bg-amber-100 text-amber-600 font-bold px-2.5 py-1 rounded-lg border border-amber-200 transition active:scale-95">
+                        <i class="fa-solid fa-plus mr-1"></i>新增內褲型號
+                    </button>
+                </div>
+                <div id="underwear-entry-container" class="space-y-2.5"></div>
+            </div>
+
+            <hr class="border-slate-100">
+
+            <div class="space-y-2.5">
+                <div class="grid grid-cols-2 gap-2 text-xs">
+                    <div>
+                        <label class="block font-bold text-slate-500 mb-1"><i class="fa-solid fa-truck text-indigo-500 mr-1"></i>物流單位</label>
+                        <select id="logistics-select" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 font-bold text-slate-800 focus:ring-2 focus:ring-indigo-500 outline-none">
+                            <option value="大榮貨運">大榮貨運</option>
+                            <option value="新竹物流">新竹物流</option>
+                            <option value="順豐速運">順豐速運</option>
+                            <option value="郵局快捷">郵局快捷</option>
+                            <option value="門市自取">門市自取</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-500 mb-1"><i class="fa-solid fa-location-dot text-red-500 mr-1"></i>目的地點</label>
+                        <input type="text" id="location-input" value="新莊" placeholder="例: 新莊" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 font-bold text-slate-800 focus:ring-2 focus:ring-indigo-500 outline-none">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2 text-xs">
+                    <div>
+                        <label class="block font-bold text-slate-500 mb-1"><i class="fa-regular fa-calendar-days text-indigo-500 mr-1"></i>叫貨日期</label>
+                        <input type="date" id="order-date" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 font-bold text-slate-800 focus:ring-2 focus:ring-indigo-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-500 mb-1"><i class="fa-solid fa-clock text-amber-500 mr-1"></i>到貨要求</label>
+                        <select id="delivery-requirement" class="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 font-bold text-red-600 focus:ring-2 focus:ring-indigo-500 outline-none">
+                            <option value="明日到">明日到</option>
+                            <option value="急件當日到">急件當日到</option>
+                            <option value="常規到貨">常規到貨</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="space-y-1.5">
+            <div class="text-[11px] font-bold text-slate-500 px-1 flex justify-between items-center">
+                <span><i class="fa-solid fa-eye text-indigo-600 mr-1"></i>即時預覽卡片（貼至 LINE 叫貨）</span>
+                <span class="text-[10px] text-slate-400">高清可複製</span>
+            </div>
+
+            <div id="export-card" class="bg-white rounded-xl shadow-md border-2 border-slate-900 p-3 space-y-2.5 text-slate-900 overflow-x-auto max-w-full">
+                <table class="w-full text-center text-xs font-bold order-table border-collapse">
+                    <thead>
+                        <tr class="bg-sky-600 text-white font-extrabold">
+                            <th class="py-1 w-1/4">型號</th>
+                            <th class="py-1 w-1/2">尺寸-顏色</th>
+                            <th class="py-1 w-1/4">數量</th>
+                        </tr>
+                    </thead>
+                    <tbody id="preview-clothes-body"></tbody>
+                    <tfoot>
+                        <tr class="bg-pink-100 text-pink-900 font-black">
+                            <td class="py-1 text-red-600">合計</td>
+                            <td></td>
+                            <td id="preview-clothes-total" class="py-1 text-red-600 text-sm">0</td>
+                        </tr>
+                    </tfoot>
+                </table>
+
+                <table class="w-full text-center text-xs font-bold order-table border-collapse">
+                    <thead>
+                        <tr class="bg-sky-600 text-white font-extrabold">
+                            <th class="py-1 w-1/4">型號</th>
+                            <th class="py-1 w-1/2">內褲尺寸</th>
+                            <th class="py-1 w-1/4">數量</th>
+                        </tr>
+                    </thead>
+                    <tbody id="preview-underwear-body"></tbody>
+                    <tfoot>
+                        <tr class="bg-pink-100 text-pink-900 font-black">
+                            <td class="py-1 text-red-600">合計</td>
+                            <td></td>
+                            <td id="preview-underwear-total" class="py-1 text-red-600 text-sm">0打</td>
+                        </tr>
+                    </tfoot>
+                </table>
+
+                <div class="grid grid-cols-3 border-2 border-slate-900 bg-amber-50 text-center text-[11px] font-extrabold text-slate-900 divide-x divide-slate-900">
+                    <div class="py-1.5 px-1 flex items-center justify-center">
+                        <span id="preview-delivery-text" class="text-red-600 font-black">明日到</span>
+                    </div>
+                    <div class="py-1.5 px-1 flex items-center justify-center overflow-hidden">
+                        <span id="preview-logistics-text" class="whitespace-nowrap text-[10px] sm:text-xs">寄「新莊」〔大榮貨運〕</span>
+                    </div>
+                    <div class="py-1.5 px-1 flex items-center justify-center">
+                        <span id="preview-date-text" class="text-slate-700 font-bold">10月12日</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 p-2.5 shadow-2xl z-30">
+        <div class="max-w-md mx-auto space-y-2">
+            <button onclick="finishOrderAndSaveHistory()" class="w-full bg-slate-900 hover:bg-slate-800 text-amber-400 font-black py-2.5 px-3 rounded-xl shadow transition active:scale-98 flex items-center justify-center gap-2 text-xs cursor-pointer border border-slate-800">
+                <i class="fa-solid fa-circle-check text-emerald-400 text-sm"></i> 完成已叫貨（存入雲端歷史紀錄）
+            </button>
+            <div class="flex items-center gap-2">
+                <button onclick="copyImageToClipboardOnly()" class="flex-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 active:scale-98 text-white font-black py-3 px-3 rounded-xl shadow-lg transition flex items-center justify-center gap-2 text-sm cursor-pointer">
+                    <i class="fa-solid fa-copy text-lg"></i> 複製叫貨圖片（發送 LINE）
+                </button>
+                <button onclick="downloadImageFile()" title="下載圖片檔" class="bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-700 font-bold p-3 rounded-xl transition active:scale-95 flex items-center justify-center">
+                    <i class="fa-solid fa-download text-base"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="history-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 opacity-0 pointer-events-none transition-all duration-300">
+        <div class="bg-white w-full max-w-md rounded-t-2xl sm:rounded-2xl max-h-[85vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden">
+            <div class="bg-slate-900 text-white p-3.5 flex justify-between items-center">
+                <h2 class="text-sm font-black flex items-center gap-2">
+                    <i class="fa-solid fa-clock-rotate-left text-amber-400"></i> 雲端叫貨歷史紀錄
+                </h2>
+                <div class="flex items-center gap-2">
+                    <button onclick="clearAllHistory()" class="text-[11px] text-red-400 hover:text-red-300 font-bold px-2 py-1 bg-slate-800 rounded border border-slate-700 transition">
+                        <i class="fa-solid fa-trash-can mr-1"></i>清空
+                    </button>
+                    <button onclick="toggleHistoryModal(false)" class="text-slate-400 hover:text-white p-1 text-base">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="p-2.5 bg-slate-100 border-b border-slate-200">
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                        <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                    </span>
+                    <input type="text" id="history-search-input" oninput="renderHistoryList()" placeholder="搜尋型號、地點、物流或日期..." class="w-full bg-white border border-slate-300 rounded-lg pl-8 pr-3 py-1.5 text-xs font-bold text-slate-800 outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+            </div>
+
+            <div id="history-list-container" class="p-2 overflow-y-auto space-y-1.5 flex-1 bg-slate-50">
+                <div class="text-center py-8 text-slate-400 text-xs">正在載入雲端紀錄...</div>
+            </div>
+
+            <div class="p-3 bg-white border-t border-slate-200 text-center">
+                <button onclick="toggleHistoryModal(false)" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2 rounded-xl text-xs transition">
+                    關閉
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="detail-modal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-all duration-200">
+        <div class="bg-white w-full max-w-sm rounded-2xl max-h-[80vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden">
+            <div class="bg-indigo-600 text-white p-3 flex justify-between items-center">
+                <h3 class="text-xs font-black flex items-center gap-1.5">
+                    <i class="fa-solid fa-file-lines"></i> 歷史叫貨單詳細資料
+                </h3>
+                <button onclick="toggleDetailModal(false)" class="text-white/80 hover:text-white p-1 text-sm">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div id="detail-content-body" class="p-3 overflow-y-auto space-y-3 text-xs bg-slate-50 flex-1"></div>
+            <div class="p-2.5 bg-white border-t border-slate-200 flex gap-2">
+                <button id="detail-reload-btn" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 rounded-xl text-xs transition">
+                    載入此筆至編輯區
+                </button>
+                <button onclick="toggleDetailModal(false)" class="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold px-4 py-2 rounded-xl text-xs transition">
+                    關閉
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="fixed top-16 left-1/2 -translate-x-1/2 bg-slate-900/90 text-white px-4 py-2.5 rounded-2xl shadow-2xl text-xs font-bold z-50 transition-all duration-300 opacity-0 pointer-events-none flex items-center gap-2 border border-slate-700 backdrop-blur-sm">
+        <i id="toast-icon" class="fa-solid fa-circle-check text-emerald-400"></i> <span id="toast-msg">已複製叫貨圖！至 LINE 貼上即可</span>
+    </div>
+
+    <script>
+        const sizes = ['S', 'M', 'L', 'XL', '2XL', '3XL', '4XL', 'Free', '特殊規格'];
+
+        let clothesData = [
+            { model: 'K-555', items: [{ size: '3XL', color: '黑', qty: 30 }] },
+            { model: 'K-611', items: [{ size: 'XL', color: '深灰', qty: 1 }] },
+            { model: 'K-150', items: [{ size: '2XL', color: '深灰', qty: 2 }] }
+        ];
+
+        let underwearData = [
+            { model: 'K-999', items: [{ size: 'L', qty: 1 }, { size: 'XL', qty: 2 }] },
+            { model: 'K-868', items: [{ size: '2XL', qty: 2 }] },
+            { model: 'K-858', items: [{ size: 'L-2XL', qty: 2 }] }
+        ];
+
+        let historyRecords = [];
+
+        function loadMemory() {
+            const sc = localStorage.getItem('ultra_c_v8');
+            const su = localStorage.getItem('ultra_u_v8');
+            if (sc && su) {
+                try {
+                    clothesData = JSON.parse(sc);
+                    underwearData = JSON.parse(su);
+                } catch(e) {}
+            }
+            document.getElementById('order-date').valueAsDate = new Date();
+            renderInputs();
+            fetchCloudHistory();
+        }
+
+        async function fetchCloudHistory() {
+            try {
+                const res = await fetch('https://api.jsonbin.io/v3/b/YOUR_BIN_ID/latest', {
+                    headers: { 'X-Master-Key': 'YOUR_API_KEY' }
+                });
+                const data = await res.json();
+                historyRecords = data.record || [];
+                updateHistoryBadge();
+            } catch(e) {
+                console.error("載入雲端歷史失敗", e);
+            }
+        }
+
+        async function saveCloudHistory() {
+            try {
+                await fetch('https://api.jsonbin.io/v3/b/YOUR_BIN_ID', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Master-Key': 'YOUR_API_KEY'
+                    },
+                    body: JSON.stringify(historyRecords)
+                });
+                updateHistoryBadge();
+            } catch(e) {
+                showToast("雲端同步失敗", "fa-triangle-exclamation", "text-amber-400");
+            }
+        }
+
+        function saveMemory() {
+            localStorage.setItem('ultra_c_v8', JSON.stringify(clothesData));
+            localStorage.setItem('ultra_u_v8', JSON.stringify(underwearData));
+            showToast("已成功儲存常用叫貨設定！", "fa-circle-check", "text-emerald-400");
+        }
+
+        function updateHistoryBadge() {
+            document.getElementById('history-badge').innerText = historyRecords.length;
+        }
+
+        function showToast(msg, icon = "fa-circle-check", colorClass = "text-emerald-400") {
+            const t = document.getElementById('toast');
+            const toastIcon = document.getElementById('toast-icon');
+            toastIcon.className = `fa-solid ${icon} ${colorClass}`;
+            document.getElementById('toast-msg').innerText = msg;
+            t.classList.remove('opacity-0');
+            setTimeout(() => t.classList.add('opacity-0'), 2500);
+        }
+
+        function renderInputs() {
+            const cContainer = document.getElementById('clothes-entry-container');
+            cContainer.innerHTML = clothesData.map((g, gIdx) => `
+                <div class="bg-pink-50/60 p-2.5 rounded-xl border border-pink-200 space-y-2">
+                    <div class="flex justify-between items-center pb-1.5 border-b border-pink-200">
+                        <div class="flex items-center gap-1.5">
+                            <span class="text-xs font-bold text-slate-600">型號：</span>
+                            <input type="text" value="${g.model}" onchange="clothesData[${gIdx}].model=this.value; updatePreview();" placeholder="例:K-555" class="w-28 bg-white border border-slate-300 rounded px-2 py-1 text-xs font-black text-pink-700 outline-none">
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <button onclick="addClothesSubItem(${gIdx})" class="text-[11px] bg-pink-600 hover:bg-pink-700 text-white px-2 py-1 rounded font-bold transition active:scale-95">＋顏色/尺寸</button>
+                            <button onclick="clothesData.splice(${gIdx},1); renderInputs();" class="text-slate-300 hover:text-red-500 p-1"><i class="fa-solid fa-trash-can"></i></button>
+                        </div>
+                    </div>
+                    <div class="space-y-1.5">
+                        ${g.items.map((sub, sIdx) => `
+                            <div class="flex items-center gap-1.5 bg-white p-1.5 rounded-lg border border-pink-100 text-xs">
+                                <select onchange="clothesData[${gIdx}].items[${sIdx}].size=this.value; updatePreview();" class="bg-slate-50 border border-slate-200 rounded px-1.5 py-1 font-bold">
+                                    ${sizes.map(s => `<option ${sub.size===s?'selected':''}>${s}</option>`).join('')}
+                                </select>
+                                <input type="text" value="${sub.color}" onchange="clothesData[${gIdx}].items[${sIdx}].color=this.value; updatePreview();" placeholder="顏色" class="w-16 bg-slate-50 border border-slate-200 rounded px-1.5 py-1">
+                                <div class="flex items-center gap-1 ml-auto">
+                                    <button onclick="adjustQty('clothes', ${gIdx},${sIdx}, -1)" class="w-6 h-6 bg-pink-100 text-pink-700 hover:bg-pink-200 rounded font-bold flex items-center justify-center text-sm">-</button>
+                                    <input type="number" value="${sub.qty}" onchange="clothesData[${gIdx}].items[${sIdx}].qty=Number(this.value); updatePreview();" class="w-12 bg-slate-50 border border-slate-200 rounded py-1 font-black text-center text-pink-600">
+                                    <button onclick="adjustQty('clothes', ${gIdx},${sIdx}, 1)" class="w-6 h-6 bg-pink-100 text-pink-700 hover:bg-pink-200 rounded font-bold flex items-center justify-center text-sm">+</button>
+                                    <span class="text-[11px] font-bold text-pink-700 ml-0.5">件</span>
+                                    <button onclick="clothesData[${gIdx}].items.splice(${sIdx},1); renderInputs();" class="text-slate-300 hover:text-red-400 ml-1"><i class="fa-solid fa-xmark"></i></button>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+
+            const uContainer = document.getElementById('underwear-entry-container');
+            uContainer.innerHTML = underwearData.map((g, gIdx) => `
+                <div class="bg-amber-50/60 p-2.5 rounded-xl border border-amber-200 space-y-2">
+                    <div class="flex justify-between items-center pb-1.5 border-b border-amber-200">
+                        <div class="flex items-center gap-1.5">
+                            <span class="text-xs font-bold text-slate-600">型號：</span>
+                            <input type="text" value="${g.model}" onchange="underwearData[${gIdx}].model=this.value; updatePreview();" placeholder="例:K-999" class="w-28 bg-white border border-slate-300 rounded px-2 py-1 text-xs font-black text-amber-800 outline-none">
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <button onclick="addUnderwearSubItem(${gIdx})" class="text-[11px] bg-amber-600 hover:bg-amber-700 text-white px-2 py-1 rounded font-bold transition active:scale-95">＋尺寸/打數</button>
+                            <button onclick="underwearData.splice(${gIdx},1); renderInputs();" class="text-slate-300 hover:text-red-500 p-1"><i class="fa-solid fa-trash-can"></i></button>
+                        </div>
+                    </div>
+                    <div class="space-y-1.5">
+                        ${g.items.map((sub, sIdx) => `
+                            <div class="flex items-center gap-1.5 bg-white p-1.5 rounded-lg border border-amber-100 text-xs">
+                                <select onchange="underwearData[${gIdx}].items[${sIdx}].size=this.value; updatePreview();" class="flex-1 bg-slate-50 border border-slate-200 rounded px-1.5 py-1 font-bold text-amber-900">
+                                    ${sizes.map(s => `<option ${sub.size===s?'selected':''}>${s}</option>`).join('')}
+                                </select>
+                                <div class="flex items-center gap-1 ml-auto">
+                                    <button onclick="adjustQty('underwear', ${gIdx},${sIdx}, -1)" class="w-6 h-6 bg-amber-100 text-amber-800 hover:bg-amber-200 rounded font-bold flex items-center justify-center text-sm">-</button>
+                                    <input type="number" value="${sub.qty}" onchange="underwearData[${gIdx}].items[${sIdx}].qty=Number(this.value); updatePreview();" class="w-12 bg-slate-50 border border-slate-200 rounded py-1 font-black text-center text-amber-700">
+                                    <button onclick="adjustQty('underwear', ${gIdx},${sIdx}, 1)" class="w-6 h-6 bg-amber-100 text-amber-800 hover:bg-amber-200 rounded font-bold flex items-center justify-center text-sm">+</button>
+                                    <span class="text-[11px] font-bold text-amber-800 ml-0.5">打</span>
+                                    <button onclick="underwearData[${gIdx}].items.splice(${sIdx},1); renderInputs();" class="text-slate-300 hover:text-red-400 ml-1"><i class="fa-solid fa-xmark"></i></button>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+
+            updatePreview();
+        }
+
+        function addClothesGroup() {
+            clothesData.push({ model: 'K-', items: [{ size: '3XL', color: '黑', qty: 1 }] });
+            renderInputs();
+        }
+        function addClothesSubItem(gIdx) {
+            clothesData[gIdx].items.push({ size: 'XL', color: '', qty: 1 });
+            renderInputs();
+        }
+        function addUnderwearGroup() {
+            underwearData.push({ model: 'K-', items: [{ size: 'L', qty: 1 }] });
+            renderInputs();
+        }
+        function addUnderwearSubItem(gIdx) {
+            underwearData[gIdx].items.push({ size: 'XL', qty: 1 });
+            renderInputs();
+        }
+        function adjustQty(type, gIdx, sIdx, delta) {
+            if (type === 'clothes') {
+                clothesData[gIdx].items[sIdx].qty = Math.max(0, (clothesData[gIdx].items[sIdx].qty || 0) + delta);
+            } else {
+                underwearData[gIdx].items[sIdx].qty = Math.max(0, (underwearData[gIdx].items[sIdx].qty || 0) + delta);
+            }
+            renderInputs();
+        }
+
+        function updatePreview() {
+            const cBody = document.getElementById('preview-clothes-body');
+            let cTotal = 0;
+            const cValid = clothesData.filter(g => (g.model || '').trim() && g.items.length > 0);
+            if (cValid.length === 0) {
+                cBody.innerHTML = `<tr><td colspan="3" class="py-1 text-slate-400">無叫貨品項</td></tr>`;
+            } else {
+                cBody.innerHTML = cValid.map((g, i) => {
+                    let gSum = 0;
+                    const specTexts = g.items.map(sub => {
+                        gSum += Number(sub.qty || 0);
+                        return `${sub.size}${sub.color}(${sub.qty}件)`;
+                    });
+                    cTotal += gSum;
+                    return `
+                        <tr class="${i % 2 === 0 ? 'bg-white' : 'bg-slate-50'}">
+                            <td class="py-1 bg-pink-200/80 text-slate-900 border-r border-slate-800 font-bold">${g.model}</td>
+                            <td class="py-1 border-r border-slate-800 text-left px-2">${specTexts.join(' ')}</td>
+                            <td class="py-1 font-black">${gSum}件</td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+            document.getElementById('preview-clothes-total').innerText = cTotal + '件';
+
+            const uBody = document.getElementById('preview-underwear-body');
+            let uTotal = 0;
+            const uValid = underwearData.filter(g => (g.model || '').trim() && g.items.length > 0);
+            if (uValid.length === 0) {
+                uBody.innerHTML = `<tr><td colspan="3" class="py-1 text-slate-400">無叫貨品項</td></tr>`;
+            } else {
+                uBody.innerHTML = uValid.map((g, i) => {
+                    let gSum = 0;
+                    const specTexts = g.items.map(sub => {
+                        gSum += Number(sub.qty || 0);
+                        return `${sub.size}(${sub.qty}打)`;
+                    });
+                    uTotal += gSum;
+                    return `
+                        <tr class="${i % 2 === 0 ? 'bg-white' : 'bg-slate-50'}">
+                            <td class="py-1 bg-yellow-200/90 text-slate-900 border-r border-slate-800 font-bold">${g.model}</td>
+                            <td class="py-1 border-r border-slate-800 text-left px-2">${specTexts.join(' ')}</td>
+                            <td class="py-1 font-black">${gSum}打</td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+            document.getElementById('preview-underwear-total').innerText = uTotal + '打';
+
+            const logisticsVal = document.getElementById('logistics-select').value;
+            const locationVal = document.getElementById('location-input').value || '新莊';
+            const deliveryReq = document.getElementById('delivery-requirement').value;
+
+            document.getElementById('preview-delivery-text').innerText = deliveryReq;
+            document.getElementById('preview-logistics-text').innerText = `寄「${locationVal}」〔${logisticsVal}〕`;
+
+            const dateVal = document.getElementById('order-date').value;
+            if (dateVal) {
+                const d = new Date(dateVal);
+                document.getElementById('preview-date-text').innerText = `${d.getMonth() + 1}月${d.getDate()}日`;
+            } else {
+                document.getElementById('preview-date-text').innerText = '--';
+            }
+        }
+
+        document.getElementById('logistics-select').addEventListener('change', updatePreview);
+        document.getElementById('location-input').addEventListener('input', updatePreview);
+        document.getElementById('order-date').addEventListener('change', updatePreview);
+        document.getElementById('delivery-requirement').addEventListener('change', updatePreview);
+
+        async function copyImageToClipboardOnly() {
+            const card = document.getElementById('export-card');
+            try {
+                const canvas = await html2canvas(card, { scale: 3, useCORS: true, backgroundColor: '#ffffff' });
+                canvas.toBlob(async (blob) => {
+                    if (!blob) {
+                        showToast("生成圖片失敗，請重試", "fa-triangle-exclamation", "text-amber-400");
+                        return;
+                    }
+                    try {
+                        const item = new ClipboardItem({ 'image/png': blob });
+                        await navigator.clipboard.write([item]);
+                        showToast("已成功複製叫貨圖！至 LINE 貼上即可", "fa-circle-check", "text-emerald-400");
+                    } catch (clipboardErr) {
+                        showToast("您的瀏覽器限制自動剪貼，請長按預覽圖複製", "fa-triangle-exclamation", "text-amber-400");
+                    }
+                }, 'image/png');
+            } catch (e) {
+                showToast("圖片渲染失敗", "fa-triangle-exclamation", "text-amber-400");
+            }
+        }
+
+        async function downloadImageFile() {
+            const card = document.getElementById('export-card');
+            try {
+                const canvas = await html2canvas(card, { scale: 3, useCORS: true, backgroundColor: '#ffffff' });
+                const url = canvas.toDataURL('image/png');
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `叫貨單_${document.getElementById('order-date').value || '最新'}.png`;
+                a.click();
+                showToast("已為您下載叫貨單圖片！", "fa-download", "text-sky-400");
+            } catch (e) {
+                showToast("下載失敗，請重新操作", "fa-triangle-exclamation", "text-amber-400");
+            }
+        }
+
+        function finishOrderAndSaveHistory() {
+            let cTotal = 0;
+            clothesData.forEach(g => g.items.forEach(i => cTotal += Number(i.qty || 0)));
+            let uTotal = 0;
+            underwearData.forEach(g => g.items.forEach(i => uTotal += Number(i.qty || 0)));
+
+            if (cTotal === 0 && uTotal === 0) {
+                showToast("目前沒有任何叫貨品項，無法完成！", "fa-triangle-exclamation", "text-amber-400");
+                return;
+            }
+
+            const now = new Date();
+            const timeStr = `${now.getFullYear()}/${(now.getMonth()+1).toString().padStart(2,'0')}/${now.getDate().toString().padStart(2,'0')} ${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
+
+            const record = {
+                id: Date.now(),
+                timestamp: timeStr,
+                orderDate: document.getElementById('order-date').value,
+                logistics: document.getElementById('logistics-select').value,
+                location: document.getElementById('location-input').value || '新莊',
+                deliveryReq: document.getElementById('delivery-requirement').value,
+                clothesData: JSON.parse(JSON.stringify(clothesData)),
+                underwearData: JSON.parse(JSON.stringify(underwearData)),
+                clothesTotal: cTotal,
+                underwearTotal: uTotal
+            };
+
+            historyRecords.unshift(record);
+            saveCloudHistory();
+            showToast("已完成並同步至雲端歷史紀錄！", "fa-circle-check", "text-emerald-400");
+        }
+
+        function toggleHistoryModal(show) {
+            const modal = document.getElementById('history-modal');
+            if (show) {
+                document.getElementById('history-search-input').value = '';
+                fetchCloudHistory();
+                renderHistoryList();
+                modal.classList.remove('opacity-0', 'pointer-events-none');
+            } else {
+                modal.classList.add('opacity-0', 'pointer-events-none');
+            }
+        }
+
+        function renderHistoryList() {
+            const container = document.getElementById('history-list-container');
+            const keyword = (document.getElementById('history-search-input')?.value || '').trim().toLowerCase();
+
+            const filteredRecords = historyRecords.filter(item => {
+                if (!keyword) return true;
+                const searchTarget = [
+                    item.timestamp, item.logistics, item.location, item.deliveryReq,
+                    item.clothesTotal + '件', item.underwearTotal + '打',
+                    ...item.clothesData.map(g => g.model + ' ' + g.items.map(sub => sub.size + (sub.color||'') + sub.qty).join('')),
+                    ...item.underwearData.map(g => g.model + ' ' + g.items.map(sub => sub.size + sub.qty).join(''))
+                ].join(' ').toLowerCase();
+                return searchTarget.includes(keyword);
+            });
+
+            if (filteredRecords.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-8 text-slate-400 space-y-2">
+                        <i class="fa-solid fa-box-open text-3xl text-slate-300"></i>
+                        <p class="text-xs font-bold">${historyRecords.length === 0 ? '尚無任何雲端歷史紀錄' : '找不到符合搜尋條件的紀錄'}</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = filteredRecords.map((item) => {
+                const clothesSummary = item.clothesData.map(g => `${g.model}(${g.items.reduce((a,b)=>a+Number(b.qty||0),0)}件)`).join('、');
+                const underwearSummary = item.underwearData.length > 0 ? item.underwearData.map(g => `${g.model}(${g.items.reduce((a,b)=>a+Number(b.qty||0),0)}打)`).join('、') : '';
+                const fullSummaryText = [clothesSummary, underwearSummary].filter(Boolean).join(' / ');
+
+                return `
+                    <div class="bg-white rounded-lg p-2.5 border border-slate-200 shadow-xs flex items-center justify-between gap-2 hover:border-indigo-300 transition">
+                        <div class="min-w-0 flex-1 cursor-pointer" onclick="showHistoryDetail(${item.id})" title="點擊查看詳細資料">
+                            <div class="flex items-center gap-2 text-[11px] font-bold text-slate-500">
+                                <span class="text-slate-900 font-extrabold"><i class="fa-regular fa-clock mr-1 text-slate-400"></i>${item.timestamp}</span>
+                                <span class="bg-red-50 text-red-600 px-1.5 py-0.2 rounded">${item.deliveryReq}</span>
+                                <span class="bg-slate-100 text-slate-700 px-1.5 py-0.2 rounded">寄「${item.location}」</span>
+                            </div>
+                            <div class="text-xs font-bold text-slate-800 truncate mt-0.5">
+                                <span class="text-pink-600 mr-1">${item.clothesTotal}件</span><span class="text-amber-600 mr-2">${item.underwearTotal}打</span>
+                                <span class="text-slate-500 font-normal text-[11px]">${fullSummaryText}</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-1 shrink-0">
+                            <button onclick="showHistoryDetail(${item.id})" title="查看詳細資料" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-2.5 py-1.5 rounded-lg text-xs transition active:scale-95 flex items-center gap-1 border border-slate-200 cursor-pointer">
+                                <i class="fa-solid fa-eye text-indigo-600"></i> 詳情
+                            </button>
+                            <button onclick="reloadHistoryToEdit(${item.id})" title="載入編輯區" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold px-2.5 py-1.5 rounded-lg text-xs transition active:scale-95 flex items-center gap-1 border border-indigo-200 cursor-pointer">
+                                <i class="fa-solid fa-arrow-rotate-left"></i> 載入
+                            </button>
+                            <button onclick="deleteHistoryRecord(${item.id})" title="刪除" class="text-slate-300 hover:text-red-500 p-1.5 text-xs transition">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function showHistoryDetail(id) {
+            const item = historyRecords.find(r => r.id === id);
+            if (!item) return;
+
+            const body = document.getElementById('detail-content-body');
+            let clothesHtml = item.clothesData && item.clothesData.length > 0 ? `
+                <div class="space-y-1">
+                    <div class="font-black text-pink-700 flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-pink-500 inline-block"></span> 衣褲類明細</div>
+                    <div class="bg-white rounded-lg p-2 border border-pink-100 space-y-1.5">
+                        ${item.clothesData.map(g => `<div class="text-[11px] flex justify-between border-b border-slate-100 pb-1"><span class="font-bold text-slate-800">${g.model}</span><span class="text-slate-600">${g.items.map(sub => `${sub.size} ${sub.color || ''} (${sub.qty}件)`).join('、')}</span></div>`).join('')}
+                    </div>
+                </div>
+            ` : '';
+
+            let underwearHtml = item.underwearData && item.underwearData.length > 0 ? `
+                <div class="space-y-1">
+                    <div class="font-black text-amber-800 flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span> 內褲類明細</div>
+                    <div class="bg-white rounded-lg p-2 border border-amber-100 space-y-1.5">
+                        ${item.underwearData.map(g => `<div class="text-[11px] flex justify-between border-b border-slate-100 pb-1"><span class="font-bold text-slate-800">${g.model}</span><span class="text-slate-600">${g.items.map(sub => `${sub.size} (${sub.qty}打)`).join('、')}</span></div>`).join('')}
+                    </div>
+                </div>
+            ` : '';
+
+            body.innerHTML = `
+                <div class="bg-white p-2.5 rounded-xl border border-slate-200 space-y-2">
+                    <div class="flex justify-between items-center text-[11px] font-bold text-slate-500 border-b border-slate-100 pb-1.5">
+                        <span>紀錄時間：${item.timestamp}</span><span class="text-red-600">${item.deliveryReq}</span>
+                    </div>
+                    <div class="text-xs font-bold text-slate-800 grid grid-cols-2 gap-1">
+                        <div>物流單位：<span class="text-indigo-600">${item.logistics}</span></div>
+                        <div>目的地點：<span class="text-indigo-600">${item.location}</span></div>
+                        <div>叫貨日期：<span class="text-slate-600">${item.orderDate || '未指定'}</span></div>
+                        <div>總計：<span class="text-pink-600">${item.clothesTotal}件</span> / <span class="text-amber-600">${item.underwearTotal}打</span></div>
+                    </div>
+                </div>
+                ${clothesHtml} ${underwearHtml}
+            `;
+
+            document.getElementById('detail-reload-btn').onclick = function() {
+                reloadHistoryToEdit(item.id);
+                toggleDetailModal(false);
+            };
+            toggleDetailModal(true);
+        }
+
+        function toggleDetailModal(show) {
+            const modal = document.getElementById('detail-modal');
+            if (show) modal.classList.remove('opacity-0', 'pointer-events-none');
+            else modal.classList.add('opacity-0', 'pointer-events-none');
+        }
+
+        function deleteHistoryRecord(id) {
+            historyRecords = historyRecords.filter(r => r.id !== id);
+            saveCloudHistory();
+            renderHistoryList();
+            showToast("已刪除該筆歷史紀錄", "fa-trash-can", "text-amber-400");
+        }
+
+        function clearAllHistory() {
+            if (historyRecords.length === 0) return;
+            historyRecords = [];
+            saveCloudHistory();
+            renderHistoryList();
+            showToast("歷史紀錄已清空", "fa-trash-can", "text-amber-400");
+        }
+
+        function reloadHistoryToEdit(id) {
+            const item = historyRecords.find(r => r.id === id);
+            if (!item) return;
+
+            clothesData = JSON.parse(JSON.stringify(item.clothesData));
+            underwearData = JSON.parse(JSON.stringify(item.underwearData));
+            document.getElementById('logistics-select').value = item.logistics || '大榮貨運';
+            document.getElementById('location-input').value = item.location || '新莊';
+            document.getElementById('delivery-requirement').value = item.deliveryReq || '明日到';
+            if (item.orderDate) document.getElementById('order-date').value = item.orderDate;
+
+            renderInputs();
+            toggleHistoryModal(false);
+            toggleDetailModal(false);
+            showToast("已將歷史叫貨單載入編輯區！", "fa-check", "text-emerald-400");
+        }
+
+        window.onload = function() {
+            loadMemory();
+        };
+    </script>
+</body>
+</html>
