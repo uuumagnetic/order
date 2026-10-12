@@ -269,8 +269,8 @@
 
         async function fetchCloudHistory() {
             try {
-                const res = await fetch('https://api.jsonbin.io/v3/b/YOUR_BIN_ID/latest', {
-                    headers: { 'X-Master-Key': 'YOUR_API_KEY' }
+                const res = await fetch('https://api.jsonbin.io/v3/b/6acc92dcffd5d16053637f98/latest', {
+                    headers: { 'X-Master-Key': '$2a$10$CiO6ioiPvSncqvUg6oUNl.q.3OKFbPu5mxjpFW7pZ/kR.lCqvng1C' }
                 });
                 const data = await res.json();
                 historyRecords = data.record || [];
@@ -282,11 +282,11 @@
 
         async function saveCloudHistory() {
             try {
-                await fetch('https://api.jsonbin.io/v3/b/YOUR_BIN_ID', {
+                await fetch('https://api.jsonbin.io/v3/b/6acc92dcffd5d16053637f98', {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
-                        'X-Master-Key': 'YOUR_API_KEY'
+                        'X-Master-Key': '$2a$10$CiO6ioiPvSncqvUg6oUNl.q.3OKFbPu5mxjpFW7pZ/kR.lCqvng1C'
                     },
                     body: JSON.stringify(historyRecords)
                 });
