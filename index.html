@@ -13,13 +13,22 @@
         .order-table th, .order-table td { border: 1.5px solid #0f172a; }
         input[type="number"]::-webkit-inner-spin-button,
         input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
-        /* 確保預覽卡片明細文字不被切斷、完美排列 */
+        
+        /* 預覽卡片內部規格強制整行換行，絕不被切斷 */
         .spec-cell {
-            white-space: normal;
+            white-space: pre-wrap;
             word-break: break-all;
-            line-height: 1.4;
-            padding: 4px 8px !important;
+            overflow-wrap: break-word;
+            line-height: 1.5;
+            padding: 6px 10px !important;
             text-align: left;
+        }
+
+        /* 讓輸入列可橫向捲動，增加填寫空間 */
+        .scrollable-row {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            white-space: nowrap;
         }
     </style>
 </head>
@@ -112,7 +121,7 @@
         </div>
     </div>
 
-    <!-- 點擊「檢視即時預覽卡片」後彈出的視窗（表格無縫貼合、按鈕美化協調） -->
+    <!-- 點擊「檢視即時預覽卡片」後彈出的視窗 -->
     <div id="preview-modal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 flex items-center justify-center p-3 opacity-0 pointer-events-none transition-all duration-300">
         <div class="bg-white w-full max-w-md rounded-2xl max-h-[92vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden">
             <div class="bg-slate-900 text-white p-3.5 flex justify-between items-center">
@@ -125,14 +134,14 @@
             </div>
             
             <div class="p-4 overflow-y-auto flex-1 bg-slate-50 space-y-4">
-                <!-- 預覽卡片：表格無縫貼合，取消所有縫隙 -->
-                <div id="modal-export-card" class="bg-white rounded-xl shadow-md border-2 border-slate-900 p-2.5 text-slate-900 overflow-x-auto max-w-full space-y-0">
-                    <table class="w-full text-center text-xs font-bold order-table border-collapse m-0">
+                <!-- 預覽卡片：表格無縫貼合、明細寬鬆自動換行 -->
+                <div id="modal-export-card" class="bg-white rounded-xl shadow-md border-2 border-slate-900 p-2.5 text-slate-900 overflow-hidden max-w-full space-y-0" style="width: 100%; box-sizing: border-box;">
+                    <table class="w-full text-center text-xs font-bold order-table border-collapse m-0" style="table-layout: fixed;">
                         <thead>
                             <tr class="bg-sky-600 text-white font-extrabold text-sm">
-                                <th class="py-1.5 w-1/4 border-b-2 border-slate-900">型號</th>
-                                <th class="py-1.5 w-1/2 border-b-2 border-slate-900">尺寸-顏色</th>
-                                <th class="py-1.5 w-1/4 border-b-2 border-slate-900">數量</th>
+                                <th class="py-1.5 border-b-2 border-slate-900" style="width: 25%;">型號</th>
+                                <th class="py-1.5 border-b-2 border-slate-900" style="width: 50%;">尺寸-顏色</th>
+                                <th class="py-1.5 border-b-2 border-slate-900" style="width: 25%;">數量</th>
                             </tr>
                         </thead>
                         <tbody id="modal-preview-clothes-body"></tbody>
@@ -145,13 +154,12 @@
                         </tfoot>
                     </table>
 
-                    <!-- 第二張表格無縫緊貼上一張，邊框完美重合 -->
-                    <table class="w-full text-center text-xs font-bold order-table border-collapse m-0 border-t-0">
+                    <table class="w-full text-center text-xs font-bold order-table border-collapse m-0 border-t-0" style="table-layout: fixed;">
                         <thead>
                             <tr class="bg-sky-600 text-white font-extrabold text-sm">
-                                <th class="py-1.5 w-1/4 border-b-2 border-slate-900">型號</th>
-                                <th class="py-1.5 w-1/2 border-b-2 border-slate-900">內褲尺寸</th>
-                                <th class="py-1.5 w-1/4 border-b-2 border-slate-900">數量</th>
+                                <th class="py-1.5 border-b-2 border-slate-900" style="width: 25%;">型號</th>
+                                <th class="py-1.5 border-b-2 border-slate-900" style="width: 50%;">內褲尺寸</th>
+                                <th class="py-1.5 border-b-2 border-slate-900" style="width: 25%;">數量</th>
                             </tr>
                         </thead>
                         <tbody id="modal-preview-underwear-body"></tbody>
@@ -164,7 +172,6 @@
                         </tfoot>
                     </table>
 
-                    <!-- 底部資訊欄位無縫貼合第二張表格 -->
                     <div class="grid grid-cols-3 border-2 border-t-0 border-slate-900 bg-amber-50 text-center text-xs font-black text-slate-900 divide-x divide-slate-900 m-0">
                         <div class="py-2 px-1 flex items-center justify-center">
                             <span id="modal-preview-delivery-text" class="text-red-600 text-sm font-black">明日到</span>
@@ -178,7 +185,7 @@
                     </div>
                 </div>
 
-                <!-- 彈窗內的動作按鈕：精緻協調排版、不再醜陋不協調 -->
+                <!-- 彈窗內的動作按鈕 -->
                 <div class="space-y-2.5 pt-1">
                     <button onclick="finishOrderAndSaveHistory()" class="w-full bg-slate-900 hover:bg-slate-800 text-amber-400 font-black py-3 px-4 rounded-xl shadow-md transition active:scale-98 flex items-center justify-center gap-2 text-sm cursor-pointer border border-slate-800">
                         <i class="fa-solid fa-circle-check text-emerald-400 text-base"></i> 完成已叫貨（存入雲端歷史紀錄）
@@ -403,17 +410,17 @@
                     </div>
                     <div class="space-y-2">
                         ${g.items.map((sub, sIdx) => `
-                            <div class="flex items-center gap-2 bg-white p-2 rounded-xl border border-pink-200 text-sm">
-                                <select onchange="clothesData[${gIdx}].items[${sIdx}].size=this.value; updatePreview();" class="bg-slate-50 border-2 border-slate-200 rounded-lg px-2 py-1.5 font-bold text-slate-900">
+                            <div class="scrollable-row flex items-center gap-2 bg-white p-2 rounded-xl border border-pink-200 text-sm">
+                                <select onchange="clothesData[${gIdx}].items[${sIdx}].size=this.value; updatePreview();" class="bg-slate-50 border-2 border-slate-200 rounded-lg px-2 py-1.5 font-bold text-slate-900 shrink-0">
                                     ${clothesSizes.map(s => `<option ${sub.size===s?'selected':''}>${s}</option>`).join('')}
                                 </select>
-                                <input type="text" value="${sub.color}" onchange="clothesData[${gIdx}].items[${sIdx}].color=this.value; updatePreview();" placeholder="顏色" class="w-20 bg-slate-50 border-2 border-slate-200 rounded-lg px-2 py-1.5 font-bold text-slate-900">
-                                <div class="flex items-center gap-1.5 ml-auto">
-                                    <button onclick="adjustQty('clothes', ${gIdx},${sIdx}, -1)" class="w-8 h-8 bg-pink-100 text-pink-700 hover:bg-pink-200 rounded-lg font-bold flex items-center justify-center text-base">-</button>
-                                    <input type="number" value="${sub.qty}" onchange="clothesData[${gIdx}].items[${sIdx}].qty=Number(this.value); updatePreview();" class="w-14 bg-slate-50 border-2 border-slate-200 rounded-lg py-1.5 font-black text-center text-pink-700 text-base">
-                                    <button onclick="adjustQty('clothes', ${gIdx},${sIdx}, 1)" class="w-8 h-8 bg-pink-100 text-pink-700 hover:bg-pink-200 rounded-lg font-bold flex items-center justify-center text-base">+</button>
-                                    <span class="text-xs font-bold text-pink-700 ml-0.5">件</span>
-                                    <button onclick="clothesData[${gIdx}].items.splice(${sIdx},1); renderInputs();" class="text-slate-400 hover:text-red-400 ml-1.5 p-1"><i class="fa-solid fa-xmark"></i></button>
+                                <input type="text" value="${sub.color}" onchange="clothesData[${gIdx}].items[${sIdx}].color=this.value; updatePreview();" placeholder="顏色" class="w-24 bg-slate-50 border-2 border-slate-200 rounded-lg px-2.5 py-1.5 font-bold text-slate-900 shrink-0">
+                                <div class="flex items-center gap-1.5 ml-auto shrink-0">
+                                    <button onclick="adjustQty('clothes', ${gIdx},${sIdx}, -1)" class="w-8 h-8 bg-pink-100 text-pink-700 hover:bg-pink-200 rounded-lg font-bold flex items-center justify-center text-base shrink-0">-</button>
+                                    <input type="number" value="${sub.qty}" onchange="clothesData[${gIdx}].items[${sIdx}].qty=Number(this.value); updatePreview();" class="w-14 bg-slate-50 border-2 border-slate-200 rounded-lg py-1.5 font-black text-center text-pink-700 text-base shrink-0">
+                                    <button onclick="adjustQty('clothes', ${gIdx},${sIdx}, 1)" class="w-8 h-8 bg-pink-100 text-pink-700 hover:bg-pink-200 rounded-lg font-bold flex items-center justify-center text-base shrink-0">+</button>
+                                    <span class="text-xs font-bold text-pink-700 ml-0.5 shrink-0">件</span>
+                                    <button onclick="clothesData[${gIdx}].items.splice(${sIdx},1); renderInputs();" class="text-slate-400 hover:text-red-400 ml-1.5 p-1 shrink-0"><i class="fa-solid fa-xmark"></i></button>
                                 </div>
                             </div>
                         `).join('')}
@@ -436,16 +443,16 @@
                     </div>
                     <div class="space-y-2">
                         ${g.items.map((sub, sIdx) => `
-                            <div class="flex items-center gap-2 bg-white p-2 rounded-xl border border-amber-200 text-sm">
-                                <select onchange="underwearData[${gIdx}].items[${sIdx}].size=this.value; updatePreview();" class="flex-1 bg-slate-50 border-2 border-slate-200 rounded-lg px-2 py-1.5 font-bold text-amber-900">
+                            <div class="scrollable-row flex items-center gap-2 bg-white p-2 rounded-xl border border-amber-200 text-sm">
+                                <select onchange="underwearData[${gIdx}].items[${sIdx}].size=this.value; updatePreview();" class="flex-1 bg-slate-50 border-2 border-slate-200 rounded-lg px-2.5 py-1.5 font-bold text-amber-900 shrink-0 min-w-[100px]">
                                     ${underwearSizes.map(s => `<option ${sub.size===s?'selected':''}>${s}</option>`).join('')}
                                 </select>
-                                <div class="flex items-center gap-1.5 ml-auto">
-                                    <button onclick="adjustQty('underwear', ${gIdx},${sIdx}, -1)" class="w-8 h-8 bg-amber-100 text-amber-800 hover:bg-amber-200 rounded-lg font-bold flex items-center justify-center text-base">-</button>
-                                    <input type="number" value="${sub.qty}" onchange="underwearData[${gIdx}].items[${sIdx}].qty=Number(this.value); updatePreview();" class="w-14 bg-slate-50 border-2 border-slate-200 rounded-lg py-1.5 font-black text-center text-amber-800 text-base">
-                                    <button onclick="adjustQty('underwear', ${gIdx},${sIdx}, 1)" class="w-8 h-8 bg-amber-100 text-amber-800 hover:bg-amber-200 rounded-lg font-bold flex items-center justify-center text-base">+</button>
-                                    <span class="text-xs font-bold text-amber-800 ml-0.5">打</span>
-                                    <button onclick="underwearData[${gIdx}].items.splice(${sIdx},1); renderInputs();" class="text-slate-400 hover:text-red-400 ml-1.5 p-1"><i class="fa-solid fa-xmark"></i></button>
+                                <div class="flex items-center gap-1.5 ml-auto shrink-0">
+                                    <button onclick="adjustQty('underwear', ${gIdx},${sIdx}, -1)" class="w-8 h-8 bg-amber-100 text-amber-800 hover:bg-amber-200 rounded-lg font-bold flex items-center justify-center text-base shrink-0">-</button>
+                                    <input type="number" value="${sub.qty}" onchange="underwearData[${gIdx}].items[${sIdx}].qty=Number(this.value); updatePreview();" class="w-14 bg-slate-50 border-2 border-slate-200 rounded-lg py-1.5 font-black text-center text-amber-800 text-base shrink-0">
+                                    <button onclick="adjustQty('underwear', ${gIdx},${sIdx}, 1)" class="w-8 h-8 bg-amber-100 text-amber-800 hover:bg-amber-200 rounded-lg font-bold flex items-center justify-center text-base shrink-0">+</button>
+                                    <span class="text-xs font-bold text-amber-800 ml-0.5 shrink-0">打</span>
+                                    <button onclick="underwearData[${gIdx}].items.splice(${sIdx},1); renderInputs();" class="text-slate-400 hover:text-red-400 ml-1.5 p-1 shrink-0"><i class="fa-solid fa-xmark"></i></button>
                                 </div>
                             </div>
                         `).join('')}
@@ -497,9 +504,9 @@
                     cTotal += gSum;
                     return `
                         <tr class="${i % 2 === 0 ? 'bg-white' : 'bg-slate-50'}">
-                            <td class="py-1.5 bg-pink-200/80 text-slate-900 border-r border-slate-900 font-bold text-xs">${g.model}</td>
-                            <td class="py-1.5 border-r border-slate-900 spec-cell text-xs font-bold text-slate-900">${specTexts.join(' ')}</td>
-                            <td class="py-1.5 font-black text-xs">${gSum}件</td>
+                            <td class="py-2 bg-pink-200/80 text-slate-900 border-r border-slate-900 font-bold text-xs" style="width: 25%;">${g.model}</td>
+                            <td class="py-2 border-r border-slate-900 spec-cell text-xs font-bold text-slate-900" style="width: 50%;">${specTexts.join('\n')}</td>
+                            <td class="py-2 font-black text-xs" style="width: 25%;">${gSum}件</td>
                         </tr>
                     `;
                 }).join('');
@@ -521,9 +528,9 @@
                     uTotal += gSum;
                     return `
                         <tr class="${i % 2 === 0 ? 'bg-white' : 'bg-slate-50'}">
-                            <td class="py-1.5 bg-yellow-200/90 text-slate-900 border-r border-slate-900 font-bold text-xs">${g.model}</td>
-                            <td class="py-1.5 border-r border-slate-900 spec-cell text-xs font-bold text-slate-900">${specTexts.join(' ')}</td>
-                            <td class="py-1.5 font-black text-xs">${gSum}打</td>
+                            <td class="py-2 bg-yellow-200/90 text-slate-900 border-r border-slate-900 font-bold text-xs" style="width: 25%;">${g.model}</td>
+                            <td class="py-2 border-r border-slate-900 spec-cell text-xs font-bold text-slate-900" style="width: 50%;">${specTexts.join('\n')}</td>
+                            <td class="py-2 font-black text-xs" style="width: 25%;">${gSum}打</td>
                         </tr>
                     `;
                 }).join('');
@@ -555,7 +562,7 @@
             updatePreview();
             const card = document.getElementById('modal-export-card');
             try {
-                const canvas = await html2canvas(card, { scale: 3, useCORS: true, backgroundColor: '#ffffff' });
+                const canvas = await html2canvas(card, { scale: 3, useCORS: true, backgroundColor: '#ffffff', windowWidth: 420 });
                 canvas.toBlob(async (blob) => {
                     if (!blob) {
                         showToast("生成圖片失敗，請重試", "fa-triangle-exclamation", "text-amber-400");
@@ -578,7 +585,7 @@
             updatePreview();
             const card = document.getElementById('modal-export-card');
             try {
-                const canvas = await html2canvas(card, { scale: 3, useCORS: true, backgroundColor: '#ffffff' });
+                const canvas = await html2canvas(card, { scale: 3, useCORS: true, backgroundColor: '#ffffff', windowWidth: 420 });
                 const url = canvas.toDataURL('image/png');
                 const a = document.createElement('a');
                 a.href = url;
