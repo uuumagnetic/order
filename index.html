@@ -10,23 +10,23 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Noto Sans TC', sans-serif; background-color: #f8fafc; font-size: 16px; }
-        .order-table th, .order-table td { border: 1.5px solid #0f172a; padding: 3px 4px !important; }
+        .order-table th, .order-table td { border: 1.5px solid #0f172a; padding: 4px 6px !important; }
         input[type="number"]::-webkit-inner-spin-button,
         input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
         
-        /* 預覽卡片單項整組保護：不被上下切割，需要換行時整組帶到下一行 */
+        /* 預覽卡片單項整組保護：換行時整組帶到下一行 */
         .spec-item {
             display: inline-block;
             white-space: nowrap;
-            margin-right: 4px;
+            margin-right: 6px;
             margin-bottom: 2px;
         }
 
         .spec-cell {
             white-space: normal;
             word-break: normal;
-            line-height: 1.4;
-            padding: 3px 6px !important;
+            line-height: 1.5;
+            padding: 4px 6px !important;
             text-align: left;
         }
 
@@ -140,14 +140,14 @@
             </div>
             
             <div class="p-3 modal-scroll-area flex-1 bg-slate-50 space-y-3 flex flex-col items-center">
-                <!-- 預覽卡片本體 -->
-                <div id="modal-export-card" class="bg-white rounded-xl shadow-md border-2 border-slate-900 p-2 text-slate-900 overflow-hidden space-y-0 shrink-0" style="width: 360px; min-width: 360px; box-sizing: border-box;">
+                <!-- 螢幕顯示用預覽卡片 -->
+                <div id="modal-export-card" class="bg-white rounded-xl shadow-md border-2 border-slate-900 p-2 text-slate-900 overflow-hidden space-y-0 shrink-0" style="width: 100%; max-width: 380px; box-sizing: border-box;">
                     <table class="w-full text-center text-xs font-bold order-table border-collapse m-0" style="table-layout: fixed;">
                         <thead>
                             <tr class="bg-sky-600 text-white font-extrabold text-xs">
-                                <th class="py-1 border-b-2 border-slate-900" style="width: 18%;">型號</th>
-                                <th class="py-1 border-b-2 border-slate-900" style="width: 66%;">尺寸-顏色</th>
-                                <th class="py-1 border-b-2 border-slate-900" style="width: 16%;">數量</th>
+                                <th class="py-1 border-b-2 border-slate-900" style="width: 20%;">型號</th>
+                                <th class="py-1 border-b-2 border-slate-900" style="width: 62%;">尺寸-顏色</th>
+                                <th class="py-1 border-b-2 border-slate-900" style="width: 18%;">數量</th>
                             </tr>
                         </thead>
                         <tbody id="modal-preview-clothes-body"></tbody>
@@ -163,9 +163,9 @@
                     <table class="w-full text-center text-xs font-bold order-table border-collapse m-0 border-t-0" style="table-layout: fixed;">
                         <thead>
                             <tr class="bg-sky-600 text-white font-extrabold text-xs">
-                                <th class="py-1 border-b-2 border-slate-900" style="width: 18%;">型號</th>
-                                <th class="py-1 border-b-2 border-slate-900" style="width: 66%;">內褲尺寸</th>
-                                <th class="py-1 border-b-2 border-slate-900" style="width: 16%;">數量</th>
+                                <th class="py-1 border-b-2 border-slate-900" style="width: 20%;">型號</th>
+                                <th class="py-1 border-b-2 border-slate-900" style="width: 62%;">內褲尺寸</th>
+                                <th class="py-1 border-b-2 border-slate-900" style="width: 18%;">數量</th>
                             </tr>
                         </thead>
                         <tbody id="modal-preview-underwear-body"></tbody>
@@ -213,6 +213,11 @@
                 </button>
             </div>
         </div>
+    </div>
+
+    <!-- 專門用於精準高解析度截圖渲染的隱藏 DOM（絕對不變形） -->
+    <div style="position: absolute; left: -9999px; top: -9999px;">
+        <div id="hidden-render-card" style="width: 400px; background: #ffffff; padding: 10px; box-sizing: border-box; font-family: 'Noto Sans TC', sans-serif;"></div>
     </div>
 
     <!-- 歷史紀錄列表彈窗 -->
@@ -400,7 +405,6 @@
             setTimeout(() => t.classList.add('opacity-0'), 2500);
         }
 
-        /* 渲染主畫面輸入區：尺寸與顏色字體放大、上下間距縮小 */
         function renderInputs() {
             const cContainer = document.getElementById('clothes-entry-container');
             cContainer.innerHTML = clothesData.map((g, gIdx) => `
@@ -511,9 +515,9 @@
                     cTotal += gSum;
                     return `
                         <tr class="${i % 2 === 0 ? 'bg-white' : 'bg-slate-50'}">
-                            <td class="py-1 bg-pink-200/80 text-slate-900 border-r border-slate-900 font-bold text-xs" style="width: 18%;">${g.model}</td>
-                            <td class="py-1 border-r border-slate-900 spec-cell text-xs font-bold text-slate-900" style="width: 66%;">${specHtml}</td>
-                            <td class="py-1 font-black text-xs" style="width: 16%;">${gSum}件</td>
+                            <td class="py-1 bg-pink-200/80 text-slate-900 border-r border-slate-900 font-bold text-xs" style="width: 20%;">${g.model}</td>
+                            <td class="py-1 border-r border-slate-900 spec-cell text-xs font-bold text-slate-900" style="width: 62%;">${specHtml}</td>
+                            <td class="py-1 font-black text-xs" style="width: 18%;">${gSum}件</td>
                         </tr>
                     `;
                 }).join('');
@@ -535,9 +539,9 @@
                     uTotal += gSum;
                     return `
                         <tr class="${i % 2 === 0 ? 'bg-white' : 'bg-slate-50'}">
-                            <td class="py-1 bg-yellow-200/90 text-slate-900 border-r border-slate-900 font-bold text-xs" style="width: 18%;">${g.model}</td>
-                            <td class="py-1 border-r border-slate-900 spec-cell text-xs font-bold text-slate-900" style="width: 66%;">${specHtml}</td>
-                            <td class="py-1 font-black text-xs" style="width: 16%;">${gSum}打</td>
+                            <td class="py-1 bg-yellow-200/90 text-slate-900 border-r border-slate-900 font-bold text-xs" style="width: 20%;">${g.model}</td>
+                            <td class="py-1 border-r border-slate-900 spec-cell text-xs font-bold text-slate-900" style="width: 62%;">${specHtml}</td>
+                            <td class="py-1 font-black text-xs" style="width: 18%;">${gSum}打</td>
                         </tr>
                     `;
                 }).join('');
@@ -565,17 +569,32 @@
         document.getElementById('order-date').addEventListener('change', updatePreview);
         document.getElementById('delivery-requirement').addEventListener('change', updatePreview);
 
-        async function copyImageToClipboardOnly() {
+        /* 強大獨立繪圖函式：確保複製到 LINE 的圖片絕對不變形 */
+        async function renderCanvasImage() {
             updatePreview();
-            const card = document.getElementById('modal-export-card');
+            const originalCard = document.getElementById('modal-export-card');
+            const hiddenContainer = document.getElementById('hidden-render-card');
+            
+            // 將最新的 HTML 複製到隱藏的固定 400px 畫布區域
+            hiddenContainer.innerHTML = originalCard.outerHTML;
+            const target = hiddenContainer.firstElementChild;
+            target.style.width = '380px';
+            target.style.margin = '0 auto';
+
+            const canvas = await html2canvas(target, { 
+                scale: 3, 
+                useCORS: true, 
+                backgroundColor: '#ffffff',
+                width: 380,
+                windowWidth: 380
+            });
+
+            return canvas;
+        }
+
+        async function copyImageToClipboardOnly() {
             try {
-                const canvas = await html2canvas(card, { 
-                    scale: 3, 
-                    useCORS: true, 
-                    backgroundColor: '#ffffff',
-                    width: 360,
-                    windowWidth: 360
-                });
+                const canvas = await renderCanvasImage();
                 canvas.toBlob(async (blob) => {
                     if (!blob) {
                         showToast("生成圖片失敗，請重試", "fa-triangle-exclamation", "text-amber-400");
@@ -595,16 +614,8 @@
         }
 
         async function downloadImageFile() {
-            updatePreview();
-            const card = document.getElementById('modal-export-card');
             try {
-                const canvas = await html2canvas(card, { 
-                    scale: 3, 
-                    useCORS: true, 
-                    backgroundColor: '#ffffff',
-                    width: 360,
-                    windowWidth: 360 
-                });
+                const canvas = await renderCanvasImage();
                 const url = canvas.toDataURL('image/png');
                 const a = document.createElement('a');
                 a.href = url;
